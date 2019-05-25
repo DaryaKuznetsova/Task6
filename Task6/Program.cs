@@ -8,60 +8,103 @@ namespace Task6
 {
     class Program
     {
-        static double sum(int i, double a1, double a2, double a3)
-        {
-            double result=0;
-            if (i == 2) return a3;
-            if (i == 1) return a2;
-            if (i == 0) return a1;
-            result = (sum(i - 1, a1, a2, a3) + 1) / (sum(i - 2, a1, a2, a3) + 2) * sum(i - 3, a1, a2, a3);
-            return result;
-        }
         static void Main(string[] args)
         {
+
+            Console.Write("Первый элемент последовательности: "); arr.Add(ReadAnswerD());
+            double s = 0;
+            do
+            {
+                Console.Write("Второй элемент последовательности: "); // ограничим ввод -2 для соблюдения ОДЗ
+                s = ReadAnswerD(); ;
+            }
+            while (s == -2);
+            arr.Add(s);
+            Console.Write("Третий элемент последовательности: "); arr.Add(ReadAnswerD());
             Console.Write("Номер последнего элемента последовательности: "); int n = ReadAnswer();
-            double[] mas = new double[n];
-            Console.Write("Первый элемент последовательности: "); mas[0] = ReadAnswerD();
-            Console.Write("Второй элемент последовательности: "); mas[1] = ReadAnswerD();
-            Console.Write("Третий элемент последовательности: "); mas[2] = ReadAnswerD();
-            try
-            {
-                for (int i = 0; i < 3; i++)
-                    Console.WriteLine(mas[i]);
-                for (int i = 3; i < n; i++)
+            bool ok = true;
+
+            for (int i = 3; i < n; i++)
+                try
                 {
-                    mas[i] = sum(i, mas[0], mas[1], mas[2]);
-                    Console.WriteLine(mas[i]);
+                    s = Item(i, arr); // найдем следующие элементы последовательности
                 }
-                int k=2;
-                bool equal = false;
-                bool ex = false;
-                double max = mas[0];
-                for (int i=0; i<n;i++)
+                 catch(DivideByZeroException )
                 {
-                    if (mas[i] >= max)
-                    {
-                        if (mas[i] == max)
-                            equal = true;
-                        max = mas[i];
-                        ex = true;
-                    }
-                    else
-                    {
-                        ex = false;
+                    ok = false;
+                }
+            if (ok)
+            {
+
+                DPrint(arr, n);
+
+                switch (Decide(arr, n))
+                {
+                    case 1:
+                        Console.WriteLine("Последовательность возрастает");
                         break;
-                    }
-                     
+                    case 0:
+                        Console.WriteLine("Последовательность не убывает");
+                        break;
+                    default:
+                        Console.WriteLine("Последовательноcть общего вида или убывает");
+                        break;
                 }
-                if (ex&&!equal)
-                    Console.WriteLine("Последовательность строго возрастающая");
-                else if(ex) Console.WriteLine("Последовательность монотонно неубывающая");
             }
-            catch(StackOverflowException)
-            {
-                Console.WriteLine("Очень жаль, что стек переполнился");
-            }
+            else
+                Console.WriteLine("К сожалению, произошло деление на 0");
         }
+
+        public static void DPrint(List<double> mas, int n)
+        {
+            bool ok = false;
+            do
+            {
+                Console.WriteLine("Вывести последовательность?\n 1. Да\n 0. Нет");
+                switch (ReadAnswer())
+                {
+                    case 1:
+                        Print(mas, n);
+                        ok = true;
+                        break;
+                    case 0:
+                        ok = true;
+                        break;
+                    default:
+                        ok = false; ;
+                        break;
+                }
+            } while (!ok);
+
+        }
+
+        public static int Decide(List<double> mas, int n)
+        {
+            if (n < 2) return -1;
+            bool equal = false;
+            bool ex = false;
+            double max = Double.MinValue;
+            for (int i = 0; i < n; i++)
+            {
+                if (mas[i] >= max)
+                {
+                    if (mas[i] == max)
+                        equal = true;
+                    max = mas[i];
+                    ex = true;
+                }
+                else
+                {
+                    ex = false;
+                    break;
+                }
+            }
+            if (ex && !equal)
+                return 1;
+            else if (ex) return 0;
+            else return -1;
+        }
+
         public static int ReadAnswer()
         {
             int a = 0;
@@ -71,8 +114,9 @@ namespace Task6
                 try
                 {
                     a = Convert.ToInt32(Console.ReadLine());
-                    if(a>=0)
-                    ok = true;
+                    if (a >= 0&&a<=1000000)
+                        ok = true;
+                    else Console.WriteLine("Пожалуйста, введите целое число больше 0 и меньше 1000000");
                 }
                 catch (Exception)
                 {
@@ -92,7 +136,7 @@ namespace Task6
                 try
                 {
                     a = Convert.ToDouble(Console.ReadLine());
-                        ok = true;
+                    ok = true;
                 }
                 catch (Exception)
                 {
@@ -101,6 +145,36 @@ namespace Task6
                 }
             } while (!ok);
             return a;
+        }
+
+        static List<double> arr = new List<double>();
+
+        static double Item(int i, List<double> arr)
+        {
+            try
+            {
+                return arr[i]; 
+            }
+            catch(Exception)
+            {
+                double s = (Item(i - 1, arr) + 1) / (Item(i - 2, arr) + 2) * Item(i - 3, arr);
+                {                   
+                    if (s == -2) // если хотя бы один элемент в стеке, который будет в знаменателе =-2
+                    {
+                        throw new DivideByZeroException();
+                    }
+                    else
+                        arr.Add(s);
+                }                
+                return arr[i];
+            }
+        }
+
+        static void Print(List<double> arr, int n)
+        {
+            Console.WriteLine();
+            for (int i = 0; i < n; i++)
+                Console.WriteLine(arr[i]);
         }
 
     }
