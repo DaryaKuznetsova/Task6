@@ -32,6 +32,7 @@ namespace Task6
                  catch(DivideByZeroException )
                 {
                     ok = false;
+                    break;
                 }
             if (ok)
             {
